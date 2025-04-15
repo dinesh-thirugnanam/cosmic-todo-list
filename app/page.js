@@ -1,89 +1,130 @@
 // pages/index.js
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, {
+    useRef,
+    useEffect,
+    forwardRef,
+    useImperativeHandle,
+} from "react";
 import * as THREE from "three";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, OrbitControls } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
+import gsap from "gsap";
 
+// -----------------------------------------------------------------------------
+// Component that renders each spiral item using <Html> for DOM content.
 function SpiralComponent({ position, children }) {
     return (
         <group position={position}>
-            <Html distanceFactor={10}>{children}</Html>
+            <Html distanceFactor={10} transform={false}>
+                {children}
+            </Html>
         </group>
     );
 }
 
-function CameraScrollController({ positions }) {
+// -----------------------------------------------------------------------------
+// CameraTimelineController is now a forwardRef component so that its
+// "goToIndex" function can be called externally (from the index overlay).
+const CameraTimelineController = forwardRef(({ positions }, ref) => {
     const { camera } = useThree();
-    const currentScroll = useRef(0);
-    const targetScroll = useRef(0);
-    const snapTimeout = useRef();
 
-    useEffect(() => {
-        const handleWheel = (e) => {
-            e.preventDefault();
-            // Adjust the target scroll value based on wheel delta.
-            targetScroll.current += e.deltaY * 0.005;
-            // Clamp the target to valid indices.
-            targetScroll.current = Math.max(
-                0,
-                Math.min(targetScroll.current, positions.length - 1)
-            );
+    // Expose goToIndex function to parent via ref.
+    useImperativeHandle(ref, () => ({
+        goToIndex: (index) => {
+            // Clamp the index between 0 and positions.length - 1.
+            index = Math.max(0, Math.min(index, positions.length - 1));
+            const pos = positions[index];
+            // Create a GSAP timeline: zoom out, pan, then zoom in.
+            gsap.timeline()
+                .to(camera.position, {
+                    duration: 0.5,
+                    z: 40,
+                    ease: "power2.inOut",
+                    onUpdate: () => {
+                        camera.lookAt(
+                            new THREE.Vector3(
+                                camera.position.x,
+                                camera.position.y,
+                                0
+                            )
+                        );
+                    },
+                })
+                .to(camera.position, {
+                    duration: 1,
+                    x: pos.x,
+                    y: pos.y,
+                    ease: "power2.inOut",
+                    onUpdate: () => {
+                        camera.lookAt(new THREE.Vector3(pos.x, pos.y, 0));
+                    },
+                })
+                .to(camera.position, {
+                    duration: 0.5,
+                    z: 10,
+                    ease: "power2.inOut",
+                    onUpdate: () => {
+                        camera.lookAt(new THREE.Vector3(pos.x, pos.y, 0));
+                    },
+                });
+        },
+    }));
 
-            // Clear and restart the snap timeout.
-            clearTimeout(snapTimeout.current);
-            snapTimeout.current = setTimeout(() => {
-                // Snap to nearest integer after a pause.
-                targetScroll.current = Math.round(targetScroll.current);
-            }, 150);
-        };
-
-        window.addEventListener("wheel", handleWheel, { passive: false });
-        return () => {
-            window.removeEventListener("wheel", handleWheel);
-            clearTimeout(snapTimeout.current);
-        };
-    }, [positions]);
-
-    useFrame(() => {
-        // Gradually interpolate currentScroll towards targetScroll.
-        currentScroll.current +=
-            (targetScroll.current - currentScroll.current) * 0.1;
-
-        // Determine index and interpolation fraction between spiral positions.
-        const index = Math.floor(currentScroll.current);
-        const frac = currentScroll.current - index;
-
-        if (index >= positions.length - 1) {
-            camera.position.copy(positions[positions.length - 1]);
-        } else {
-            camera.position.lerpVectors(
-                positions[index],
-                positions[index + 1],
-                frac
-            );
-        }
-    });
-
+    // (Optional: You can still add your scroll trigger/scroll-based GSAP timeline here.)
     return null;
+});
+
+// -----------------------------------------------------------------------------
+// A simple index navigation overlay to jump directly to a component.
+function IndexNavigation({ count, onSelect }) {
+    return (
+        <div
+            style={{
+                position: "absolute",
+                right: "20px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                background: "rgba(255,255,255,0.8)",
+                padding: "10px",
+                borderRadius: "8px",
+            }}
+        >
+            {Array.from({ length: count }).map((_, i) => (
+                <button
+                    key={i}
+                    onClick={() => onSelect(i)}
+                    style={{
+                        margin: "5px",
+                        padding: "5px 10px",
+                        cursor: "pointer",
+                    }}
+                >
+                    {i + 1}
+                </button>
+            ))}
+        </div>
+    );
 }
 
+// -----------------------------------------------------------------------------
+// Main Home component.
 export default function Home() {
     const components = [];
     const positions = [];
     const count = 50;
-    const angleStep = Math.PI / 6; // Angular step per component.
-    const spiralRadiusStep = 0.5; // Radial distance increment per component.
-    const zStep = 0.3; // Z-axis step per component.
+    const angleStep = Math.PI / 10; // Angular step per component.
+    const spiralRadiusStep = 100; // Distance increment radially.
 
-    // Build spiral components along a 3D spiral path.
+    // Create a flat spiral on the XY plane (z = 0) and store each component's position.
     for (let i = 0; i < count; i++) {
         const theta = i * angleStep;
         const r = i * spiralRadiusStep;
         const x = r * Math.cos(theta);
         const y = r * Math.sin(theta);
-        const z = i * zStep;
+        const z = 0;
         positions.push(new THREE.Vector3(x, y, z));
         components.push(
             <SpiralComponent key={i} position={[x, y, z]}>
@@ -94,23 +135,29 @@ export default function Home() {
         );
     }
 
+    // Create a ref so we can call goToIndex from the IndexNavigation overlay.
+    const cameraControllerRef = useRef();
+
     return (
         <div className="relative w-full h-screen">
+            {/* The index navigation overlay */}
+            <IndexNavigation
+                count={count}
+                onSelect={(i) => cameraControllerRef.current?.goToIndex(i)}
+            />
+
             <Canvas
                 className="absolute top-0 left-0 w-full h-full z-0"
                 camera={{
-                    position: [0, 0, 20],
+                    position: [positions[0].x, positions[0].y, 10],
                     up: [0, 1, 0],
                     near: 0.1,
                     far: 1000,
                 }}
             >
-                <CameraScrollController positions={positions} />
-                <OrbitControls
-                    enablePan={true}
-                    enableZoom={true}
-                    enableRotate={true}
-                    screenSpacePanning
+                <CameraTimelineController
+                    ref={cameraControllerRef}
+                    positions={positions}
                 />
                 {components}
             </Canvas>
