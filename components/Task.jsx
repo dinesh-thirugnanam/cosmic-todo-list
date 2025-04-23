@@ -1,17 +1,22 @@
-import { Html } from "@react-three/drei";
-import React from "react";
+"use client";
 
-export default function Task({ position, index, onClick }) {
+import React, { useMemo } from "react";
+import { Html } from "@react-three/drei";
+
+export default function Task({ task, curve }) {
+  // Compute the 3D position on the curve based on the task's progress.
+  const position = useMemo(() => {
+    const pos = curve.getPoint(task.progress);
+    return [pos.x, pos.y, pos.z];
+  }, [curve, task.progress]);
+  
   return (
     <group position={position}>
-      <Html center>
-        <div
-          onClick={() => onClick(index)}
-          className="bg-white text-slate-700 border p-4 rounded-lg shadow-lg hover:scale-110 transition-transform cursor-pointer w-32 text-center"
-        >
-          Task {index + 1}
-        </div>
-      </Html>
+      <mesh>
+        <circleGeometry args={[0.5, 32]} />
+        <meshBasicMaterial color="orange" />
+      </mesh>
+      <Html center>{task.title}</Html>
     </group>
   );
 }
