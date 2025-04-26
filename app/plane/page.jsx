@@ -6,9 +6,10 @@ import BoundedScene from './BoundedScene';
 
 export default function MapCanvas() {
   const [nodes, setNodes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-      // Replace this with your fetch or DB call
+      // Simulate async data fetch
       const data = [
           { id: "1", x: 10, y: -3, props: { tasks: ["task1", "task2"] } },
           { id: "2", x: -6, y: 9, props: { tasks: [] } },
@@ -69,40 +70,85 @@ export default function MapCanvas() {
                   ],
               },
           },
-          { id: "12", x: -19, y: -6, props: { tasks: ["task13"] } },
+          { id: "12", props: { tasks: ["task13"] } },
+          { id: "13", props: { tasks: ["task13"] } },
+          { id: "14", props: { tasks: [] } },
+          { id: "15", props: { tasks: ["task13"] } },
+          { id: "16", props: { tasks: [] } },
+          { id: "17", props: { tasks: ["task13"] } },
+          { id: "18", props: { tasks: ["task13"] } },
+          { id: "19", props: { tasks: ["task13", "task13"] } },
+          { id: "20", props: { tasks: ["task13", "task13", "task13"] } },
+          { id: "21", props: { tasks: ["task13"] } },
+          { id: "22", props: { tasks: ["task13"] } },
+          { id: "23", props: { tasks: ["task13"] } },
+          {
+              id: "24",
+              props: { tasks: ["task13", "task13", "task13", "task13"] },
+          },
+          { id: "25", props: { tasks: ["task13"] } },
+          { id: "26", props: { tasks: ["task13"] } },
+          { id: "27", props: { tasks: ["task13"] } },
+          { id: "28", props: { tasks: ["task13"] } },
+          {
+              id: "29",
+              props: {
+                  tasks: [
+                      "task13",
+                      "task13",
+                      "task13",
+                      "task13",
+                      "task13",
+                      "task13",
+                      "task13",
+                  ],
+              },
+          },
+          { id: "30", props: { tasks: ["task13"] } },
+          { id: "31", props: { tasks: ["task13"] } },
       ];
       setNodes(data);
+      setIsLoading(false);
   }, []);
 
   return (
       <div style={{ width: "100%", height: "100vh" }} className="bg-black">
-          <Canvas
-              orthographic
-              camera={{
-                  position: [0, 0, 10],
-                  near: 0.01,
-                  far: 1000,
-              }}
-          >
-              <BoundedScene nodes={nodes} />
-          </Canvas>
-          <div
-              style={{
-                  position: "absolute",
-                  bottom: "10px",
-                  left: "10px",
-                  background: "rgba(0,0,0,0.5)",
-                  color: "white",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  pointerEvents: "none",
-              }}
-          >
+          {isLoading ? (
+              <div
+                  style={{
+                      color: "white",
+                      textAlign: "center",
+                      paddingTop: "50px",
+                  }}
+              >
+                  Loading...
+              </div>
+          ) : (
+              <Canvas
+                  orthographic
+                  camera={{
+                      position: [0, 0, 10],
+                      near: 0.01,
+                      far: 1000,
+                  }}
+              >
+                  <BoundedScene nodes={nodes} />
+              </Canvas>
+          )}
+          <div className="absolute bottom-2.5 left-2.5 bg-black/50 text-white p-2.5 rounded pointer-events-none">
               <strong>Controls:</strong>
-              <br />
-              Pan: Arrow Keys or WASD
-              <br />
-              Zoom: + / - keys or Mouse Wheel
+              <span className="hidden sm:block">
+                  <br />
+                  Pan: Arrow Keys or WASD
+                  <br />
+                  Zoom: + / - keys or Mouse Wheel
+              </span>
+              <span className="block sm:hidden">
+                  <br />
+                  Pan: Touch and drag
+                  <br />
+                  Zoom: Pinch zoom
+              </span>
           </div>
       </div>
   );
