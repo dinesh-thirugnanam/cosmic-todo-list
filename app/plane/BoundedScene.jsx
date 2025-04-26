@@ -7,7 +7,13 @@ import KeyboardControls from './KeyboardControls';
 
 export default function BoundedScene({ nodes }) {
   const controlsRef = useRef();
-  const { camera, size } = useThree();
+  const { camera, size, gl } = useThree();
+  
+  // Enable shadows in the renderer
+  useEffect(() => {
+    gl.shadowMap.enabled = true;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+  }, [gl]);
   
   // Calculate bounds based on nodes
   const bounds = React.useMemo(() => {
@@ -92,13 +98,32 @@ export default function BoundedScene({ nodes }) {
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={0.6} />
+      {/* Reduced the ambient light intensity to make node lights more visible */}
+      <ambientLight intensity={0} />
       
-      {/* Boundary plane */}
-      <mesh position={[centerX, centerY, -0.1]} rotation={[0, 0, 0]}>
+      {/* Added shadow casting to directional light */}
+      <directionalLight 
+        position={[5, 5, 5]} 
+        intensity={0} 
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-far={15}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
+      />
+      
+      {/* Boundary plane - changed to StandardMaterial to receive light */}
+      <mesh position={[centerX, centerY, -0.1]} rotation={[0, 0, 0]} receiveShadow={true}>
         <planeGeometry args={[planeWidth, planeHeight]} />
-        <meshBasicMaterial color="#202030" side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color="#fff"
+          side={THREE.DoubleSide}
+          roughness={0.8}
+          metalness={0.3}
+        />
       </mesh>
       
       {/* Grid for visual reference */}
@@ -109,7 +134,13 @@ export default function BoundedScene({ nodes }) {
       />
       
       {/* Nodes */}
-      {nodes.map(node => <Node key={node.id} position={node} />)}
+      {nodes.map(node => (
+        <Node 
+          key={node.id} 
+          position={node} 
+          nodeData={node.props.tasks} 
+        />
+      ))}
       
       {/* Custom keyboard controls */}
       <KeyboardControls 

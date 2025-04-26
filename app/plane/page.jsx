@@ -10,18 +10,18 @@ export default function MapCanvas() {
   useEffect(() => {
     // Replace this with your fetch or DB call
     const data = [
-      { id: '1', x: 10, y: -3 },
-      { id: '2', x: -6, y: 9 },
-      { id: '3', x: 10, y: 9 },
-      { id: '4', x: 3, y: 3 },
-      { id: '5', x: 1, y: 2 },
-      { id: '6', x: 2, y: 1 },
-      { id: '7', x: 7, y: -9 },
-      { id: '8', x: -1, y: 10 },
-      { id: '9', x: -12, y: 10 },
-      { id: '10', x: -14, y: 10 },
-      { id: '11', x: -17, y: 20 },
-      { id: '12', x: -19, y: -6 }
+      { id: '1', x: 10, y: -3, props: { tasks: ['task1', 'task2'] } },
+      { id: '2', x: -6, y: 9, props: { tasks: [] } },
+      { id: '3', x: 10, y: 9, props: { tasks: ['task3'] } },
+      { id: '4', x: 3, y: 3, props: { tasks: ['task4', 'task5', 'task6', 'task6', 'task6', 'task6', 'task6'] } },
+      { id: '5', x: 1, y: 2, props: { tasks: [] } },
+      { id: '6', x: 2, y: 1, props: { tasks: ['task7'] } },
+      { id: '7', x: 7, y: -9, props: { tasks: ['task8', 'task9'] } },
+      { id: '8', x: -1, y: 10, props: { tasks: [] } },
+      { id: '9', x: -12, y: 10, props: { tasks: ['task10'] } },
+      { id: '10', x: -14, y: 10, props: { tasks: [] } },
+      { id: '11', x: -17, y: 20, props: { tasks: ['task11', 'task12'] } },
+      { id: '12', x: -19, y: -6, props: { tasks: ['task13'] } }
     ];
     setNodes(data);
   }, []);
