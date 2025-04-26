@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useMemo } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import Node from "./Node";
+import Node from "@/components/node-components/Node";
 import KeyboardControls from "./KeyboardControls";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
