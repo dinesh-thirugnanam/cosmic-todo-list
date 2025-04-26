@@ -97,77 +97,82 @@ export default function BoundedScene({ nodes }) {
   });
 
   return (
-    <>
-      {/* Reduced the ambient light intensity to make node lights more visible */}
-      <ambientLight intensity={0} />
-      
-      {/* Added shadow casting to directional light */}
-      <directionalLight 
-        position={[5, 5, 5]} 
-        intensity={0} 
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-far={15}
-        shadow-camera-left={-7}
-        shadow-camera-right={7}
-        shadow-camera-top={7}
-        shadow-camera-bottom={-7}
-      />
-      
-      {/* Boundary plane - changed to StandardMaterial to receive light */}
-      <mesh position={[centerX, centerY, -0.1]} rotation={[0, 0, 0]} receiveShadow={true}>
-        <planeGeometry args={[planeWidth, planeHeight]} />
-        <meshStandardMaterial 
-          color="#fff"
-          side={THREE.DoubleSide}
-          roughness={0.8}
-          metalness={0.3}
-        />
-      </mesh>
-      
-      {/* Grid for visual reference */}
-      <gridHelper 
-        args={[Math.max(planeWidth, planeHeight), 20, "#444444", "#333333"]}
-        position={[centerX, centerY, -0.05]}
-        rotation={[Math.PI/2, 0, 0]} 
-      />
-      
-      {/* Nodes */}
-      {nodes.map(node => (
-        <Node 
-          key={node.id} 
-          position={node} 
-          nodeData={node.props.tasks} 
-        />
-      ))}
-      
-      {/* Custom keyboard controls */}
-      <KeyboardControls 
-        controlsRef={controlsRef}
-        speed={2} // Pan speed multiplier
-        zoomSpeed={0.05} // Zoom speed multiplier
-      />
-      
-      {/* Mouse/touch controls */}
-      <OrbitControls
-        ref={controlsRef}
-        enableRotate={false}
-        enablePan={true}
-        enableZoom={true}
-        minZoom={adaptiveMinZoom * 0.5}
-        maxZoom={100}
-        zoomSpeed={1.5}
-        mouseButtons={{
-          LEFT: THREE.MOUSE.PAN,
-          MIDDLE: THREE.MOUSE.DOLLY,
-          RIGHT: THREE.MOUSE.ROTATE
-        }}
-        touches={{
-          ONE: THREE.TOUCH.PAN,
-          TWO: THREE.TOUCH.DOLLY_ROTATE
-        }}
-      />
-    </>
+      <>
+          {/* Reduced the ambient light intensity to make node lights more visible */}
+          <ambientLight intensity={0} />
+
+          {/* Added shadow casting to directional light */}
+          <directionalLight
+              position={[5, 5, 5]}
+              intensity={0}
+              castShadow
+              shadow-mapSize-width={1024}
+              shadow-mapSize-height={1024}
+              shadow-camera-far={15}
+              shadow-camera-left={-7}
+              shadow-camera-right={7}
+              shadow-camera-top={7}
+              shadow-camera-bottom={-7}
+          />
+
+          {/* Boundary plane - changed to StandardMaterial to receive light */}
+          <mesh
+              position={[centerX, centerY, -0.1]}
+              rotation={[0, 0, 0]}
+              receiveShadow={true}
+          >
+              <planeGeometry args={[planeWidth, planeHeight]} />
+              <meshStandardMaterial
+                  color="#fff"
+                  side={THREE.DoubleSide}
+                  roughness={0.8}
+                  metalness={0.3}
+              />
+          </mesh>
+
+          {/* Grid for visual reference */}
+          <gridHelper
+              args={[
+                  Math.max(planeWidth, planeHeight),
+                  20,
+                  "#444444",
+                  "#333333",
+              ]}
+              position={[centerX, centerY, -0.05]}
+              rotation={[Math.PI / 2, 0, 0]}
+          />
+
+          {/* Nodes */}
+          {nodes.map((node) => (
+              <Node key={node.id} position={node} nodeData={node.props.tasks} />
+          ))}
+
+          {/* Custom keyboard controls */}
+          <KeyboardControls
+              controlsRef={controlsRef}
+              speed={3} // Pan speed multiplier
+              zoomSpeed={0.05} // Zoom speed multiplier
+          />
+
+          {/* Mouse/touch controls */}
+          <OrbitControls
+              ref={controlsRef}
+              enableRotate={false}
+              enablePan={true}
+              enableZoom={true}
+              minZoom={adaptiveMinZoom * 0.5}
+              maxZoom={100}
+              zoomSpeed={1.5}
+              mouseButtons={{
+                  LEFT: THREE.MOUSE.PAN,
+                  MIDDLE: THREE.MOUSE.DOLLY,
+                  RIGHT: THREE.MOUSE.ROTATE,
+              }}
+              touches={{
+                  ONE: THREE.TOUCH.PAN,
+                  TWO: THREE.TOUCH.DOLLY_ROTATE,
+              }}
+          />
+      </>
   );
 }
