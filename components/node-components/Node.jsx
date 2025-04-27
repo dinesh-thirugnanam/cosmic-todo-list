@@ -8,9 +8,12 @@ import NodeHalo from './NodeHalo';
 import NodeParticles from './NodeParticles';
 import ToolTip from './ToolTip';
 
+// In Node.jsx
+import { isMobile } from 'react-device-detect';
+
 const Node = ({ position, nodeData }) => {
   const [hovered, setHovered] = useState(false);
-  const taskCount = Array.isArray(nodeData) ? nodeData.length : 0;
+  const taskCount = Array.isArray(nodeData.tasks) ? nodeData.tasks.length : 0;
   const hasTasks = taskCount > 0;
   const baseColor = hasTasks ? 0xffff00 : 0xffffff;
   const colorIntensity = hasTasks ? Math.min(1 + taskCount * 0.15, 1.75) : 1;
@@ -19,11 +22,24 @@ const Node = ({ position, nodeData }) => {
 
   return (
     <group position={[position.x, position.y, position.z]}>
-      <NodeLight hasTasks={hasTasks} hovered={hovered} color={color} taskCount={taskCount} />
-      <NodeMesh hasTasks={hasTasks} nodeScale={nodeScale} hovered={hovered} baseColor={baseColor} taskCount={taskCount} nodeData={nodeData} />
-      <NodeHitbox setHovered={setHovered} taskCount={taskCount} />
+      <NodeLight
+        hasTasks={hasTasks}
+        hovered={hovered}
+        color={color}
+        taskCount={taskCount}
+        castShadow={!isMobile}
+      />
+      <NodeMesh
+        hasTasks={hasTasks}
+        nodeScale={nodeScale}
+        hovered={hovered}
+        baseColor={baseColor}
+        taskCount={taskCount}
+        nodeData={nodeData.tasks}
+      />
+      {!isMobile && <NodeHitbox setHovered={setHovered} taskCount={taskCount} />}
       {hasTasks &&
-        nodeData.map((item, index) => (
+        nodeData.tasks.slice(0, 3).map((item, index) => (
           <NodeHalo
             key={index}
             index={index}
@@ -32,9 +48,10 @@ const Node = ({ position, nodeData }) => {
             hasTasks={hasTasks}
           />
         ))}
-      <NodeParticles hovered={hovered} hasTasks={hasTasks} taskCount={taskCount} />
-      <ToolTip hovered={hovered} nodeData={nodeData} taskCount={taskCount} />
-      
+      {!isMobile && (
+        <NodeParticles hovered={hovered} hasTasks={hasTasks} taskCount={taskCount} />
+      )}
+      <ToolTip hovered={hovered} nodeData={nodeData.name} taskCount={taskCount} />
     </group>
   );
 };

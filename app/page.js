@@ -75,6 +75,7 @@ const CameraTimelineController = forwardRef(({ positions }, ref) => {
     // (Optional: You can still add your scroll trigger/scroll-based GSAP timeline here.)
     return null;
 });
+CameraTimelineController.displayName = "CameraTimelineController";
 
 // -----------------------------------------------------------------------------
 // A simple index navigation overlay to jump directly to a component.

@@ -168,7 +168,7 @@ export default function BoundedScene({ nodes = [] }) {
                         position={
                             pathPoints[index] || new THREE.Vector3(0, 0, 0)
                         }
-                        nodeData={node.props.tasks}
+                        nodeData={node.props}
                     />
                 ))}
             </group>

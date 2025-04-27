@@ -1,12 +1,15 @@
 {
   "name": "cosmic-todo-list",
   "version": "0.1.0",
+  "type": "module",
+  "description": "A cosmic todo list application built with Next.js, React, and Three.js.",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "seed": "node scripts/seed-default-nodes.js"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -14,9 +17,11 @@
     "@react-three/fiber": "^9.1.2",
     "@types/three": "^0.175.0",
     "gsap": "^3.12.7",
+    "mongoose": "^8.14.0",
     "motion": "^12.6.3",
     "next": "15.2.4",
     "react": "^19.0.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0",
     "three": "^0.175.0"
   },

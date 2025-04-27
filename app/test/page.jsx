@@ -1,100 +1,93 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import gsap from "gsap";
-import * as THREE from "three";
+import { useState } from 'react';
+import { createNode } from '@/utils/nodeOperations';
 
-import PathBoard from "../../components/Path";
-import TaskOnPath from "../../components/Task";
-import tasksData from "../../data/tasks.json";
+export default function CreateNodeForm({ onNodeCreated }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    tasks: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-export default function MapScene() {
-  // Initialize tasks with an extra `progress` property.
-  // We'll place each task initially along the path based on its index.
-  const [tasks, setTasks] = useState(
-    tasksData.map((task, i) => ({
-      ...task,
-      progress: (i + 0.5) / tasksData.length // positions between 0 and 1
-    }))
-  );
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  // Define a custom path (feel free to adjust control points)
-  const curve = useMemo(() => {
-    return new THREE.CatmullRomCurve3(
-      [
-        new THREE.Vector3(-10, -10, 0),
-        new THREE.Vector3(0, -8, 0),
-        new THREE.Vector3(10, -10, 0),
-        new THREE.Vector3(10, 0, 0),
-        new THREE.Vector3(10, 10, 0),
-        new THREE.Vector3(3, 9, 0),
-        new THREE.Vector3(5, 5, 0),
-        new THREE.Vector3(7, 9, 0),
-        new THREE.Vector3(2, 11, 0),
-        new THREE.Vector3(-3, 12, 0),
-        new THREE.Vector3(-10, 7, 0),
-        new THREE.Vector3(-9, 6, 0),
-      ],
-      false,
-      "catmullrom"
-    );
-  }, []);
-
-  // Called when a task in the side menu is clicked.
-  // Animate the clicked task along the curve until its progress reaches 1.
-  const handleTaskClick = (taskId) => {
-    setTasks((prevTasks) => {
-      return prevTasks.map((task) => {
-        if (task.id === taskId) {
-          gsap.to(task, {
-            duration: 1,
-            progress: 1,
-            ease: "power2.out",
-            onUpdate: () => {
-              // Force a rerender by updating tasks state.
-              setTasks((currentTasks) =>
-                currentTasks.map((t) =>
-                  t.id === taskId ? { ...t, progress: task.progress } : t
-                )
-              );
-            },
-            onComplete: () => {
-              // Remove the task after it reaches the end.
-              setTasks((currentTasks) => currentTasks.filter((t) => t.id !== taskId));
-            }
-          });
-        }
-        return task;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+    
+    try {
+      // Convert tasks string to array
+      const taskArray = formData.tasks
+        ? formData.tasks.split(',').map(task => task.trim())
+        : [];
+      
+      const nodeData = {
+        name: formData.name,
+        tasks: taskArray
+      };
+      
+      const newNode = await createNode(nodeData);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        tasks: ''
       });
-    });
+      
+      if (onNodeCreated) {
+        onNodeCreated(newNode);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      {/* Canvas area */}
-      <div style={{ flex: "1 1 0%" }}>
-        <Canvas orthographic camera={{ zoom: 50, position: [0, 0, 10], near: 0.1, far: 1000 }}>
-          <ambientLight intensity={0.5} />
-          <OrbitControls enableRotate={false} />
-          <PathBoard curve={curve} />
-          {tasks.map((task) => (
-            <TaskOnPath key={task.id} task={task} curve={curve} />
-          ))}
-        </Canvas>
+    <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-gray-100 rounded-lg">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Node Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        />
       </div>
-      {/* Side menu */}
-      <div style={{ width: "300px", borderLeft: "1px solid #ccc", padding: "1rem", overflowY: "auto" }}>
-        <h3>Task List</h3>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {tasks.map((task) => (
-            <li key={task.id} style={{ margin: "0.5rem 0", cursor: "pointer" }} onClick={() => handleTaskClick(task.id)}>
-              {task.title}
-            </li>
-          ))}
-        </ul>
+      
+      <div>
+        <label htmlFor="tasks" className="block text-sm font-medium text-gray-700">Tasks (comma separated)</label>
+        <textarea
+          id="tasks"
+          name="tasks"
+          value={formData.tasks}
+          onChange={handleChange}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          rows="3"
+        />
       </div>
-    </div>
+      
+      {error && (
+        <div className="text-red-500 text-sm">{error}</div>
+      )}
+      
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
+      >
+        {isSubmitting ? 'Creating...' : 'Create Node'}
+      </button>
+    </form>
   );
 }
