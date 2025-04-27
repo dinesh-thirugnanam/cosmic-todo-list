@@ -3,7 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import Node from "@/components/node-components/Node";
-import KeyboardControls from "./KeyboardControls";
+import KeyboardControls from "@/utils/KeyboardControls";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 

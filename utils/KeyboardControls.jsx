@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
 
 export default function KeyboardControls({ controlsRef, speed = 1, zoomSpeed = 0.1 }) {
   const { camera } = useThree();

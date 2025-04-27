@@ -5,11 +5,11 @@
   "description": "A cosmic todo list application built with Next.js, React, and Three.js.",
   "private": true,
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "seed": "node scripts/seed-default-nodes.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "node scripts/seed-default-nodes.js"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -17,6 +17,7 @@
     "@react-three/fiber": "^9.1.2",
     "@types/three": "^0.175.0",
     "gsap": "^3.12.7",
+    "lucide-react": "^0.503.0",
     "mongoose": "^8.14.0",
     "motion": "^12.6.3",
     "next": "15.2.4",
