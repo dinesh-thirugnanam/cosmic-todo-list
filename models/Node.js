@@ -1,19 +1,26 @@
-// models/Node.js
 import mongoose from "mongoose";
 
 const NodeSchema = new mongoose.Schema({
-  name: {
+  listName: {
     type: String,
-    required: [true, "Please provide a name for this node"],
-    maxlength: [60, "Name cannot be more than 60 characters"],
+    required: [true, "Please provide a name for this list"],
+    maxlength: [60, "List name cannot be more than 60 characters"],
+    trim: true,
   },
-  tasks: {
-    type: [String],
-    default: [],
+  uid: {
+    type: String,
+    required: [true, "Please provide a user ID"],
+    index: true,
   },
+  tasks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+    },
+  ],
   isDefault: {
     type: Boolean,
-    default: false,
+    default: false, // Marks a default list (e.g., "Inbox")
   },
   createdAt: {
     type: Date,

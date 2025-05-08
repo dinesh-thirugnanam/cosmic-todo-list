@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic To-Do List 🚀</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at bottom, #0d0d0d 0%, #000 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+}
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .header img {
+      width: 40px;
+      margin-right: 10px;
+      animation: spin 5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .add-task-btn {
+      background: linear-gradient(45deg, #1e90ff, #00bfff);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .add-task-btn:hover {
+      background: linear-gradient(45deg, #00bfff, #1e90ff);
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #00bfff;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      transition: opacity 0.3s ease;
+    }
+
+    .task-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task-text.completed span:nth-child(2) {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .dropdown-menu {
+      background: #111;
+      border: 1px solid #00bfff;
+    }
+
+    .dropdown-item {
+      color: white;
+    }
+
+    .dropdown-item:hover {
+      background: #00bfff;
+    }
+
+    .task-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      margin-top: 30px;
+      color: #00bfff;
+      border-bottom: 1px dashed #00bfff;
+      padding-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .collapse-toggle {
+      background: none;
+      border: none;
+      color: #00bfff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    @keyframes crumble {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      40% { transform: scale(0.8) rotate(10deg); opacity: 0.7; }
+      70% { transform: scale(0.4) rotate(-15deg); opacity: 0.3; }
+      100% { transform: scale(0) rotate(45deg); opacity: 0; }
+    }
+
+    .crumble {
+      animation: crumble 0.6s forwards;
+    }
+  </style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="header">
+  <img src="sun.svg" alt="Sun Icon" />
+  <h2 contenteditable="true">Untitled List</h2>
+  <div class="ms-auto d-flex gap-2">
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        Sort Tasks
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" onclick="sortTasks('alpha')">Alphabetical</a></li>
+        <li><a class="dropdown-item" href="#" onclick="sortTasks('date')">Creation Date</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-warning" onclick="undoDelete()">Undo Delete</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="taskList"></div>
+  <div class="text-center">
+    <button class="add-task-btn" onclick="addTask()">+ Add Task</button>
+  </div>
+</div>
+
+<script>
+  const starsContainer = document.getElementById('stars');
+  const numStars = 1000;
+  let tasks = [];
+  let lastDeletedTask = null;
+  let showCompleted = true;
+
+  function createStar() {
+    const star = document.createElement('div');
+    star.classList.add('star');
+    star.style.left = Math.random() * window.innerWidth + 'px';
+    star.style.top = Math.random() * window.innerHeight + 'px';
+    starsContainer.appendChild(star);
+    function moveStar() {
+      let top = parseFloat(star.style.top);
+      top -= 0.3;
+      if (top < -2) {
+        top = window.innerHeight;
+        star.style.left = Math.random() * window.innerWidth + 'px';
+      }
+      star.style.top = top + 'px';
+      requestAnimationFrame(moveStar);
+    }
+    moveStar();
+  }
+
+  for (let i = 0; i < numStars; i++) createStar();
+
+  function addTask() {
+    const id = Date.now();
+    const task = {
+      id,
+      text: 'New Task',
+      date: new Date(),
+      completed: false
+    };
+    tasks.push(task);
+    renderTasks();
+  }
+
+  function renderTasks() {
+    const taskList = document.getElementById('taskList');
+    taskList.innerHTML = '';
+
+    const activeTasks = tasks.filter(t => !t.completed);
+    const completedTasks = tasks.filter(t => t.completed);
+
+    if (activeTasks.length > 0) {
+      const activeSection = document.createElement('div');
+      activeSection.innerHTML = `<div class="section-title">Active Tasks</div>`;
+      activeTasks.forEach(task => {
+        activeSection.appendChild(createTaskElement(task));
+      });
+      taskList.appendChild(activeSection);
+    }
+
+    if (completedTasks.length > 0) {
+      const completedSection = document.createElement('div');
+      completedSection.id = 'completed-section';
+      completedSection.innerHTML = `
+        <div class="section-title">
+          Completed Tasks
+          <button class="collapse-toggle" onclick="toggleCompleted()">
+            ${showCompleted ? 'Hide' : 'Show'}
+          </button>
+        </div>
+      `;
+      if (showCompleted) {
+        completedTasks.forEach(task => {
+          completedSection.appendChild(createTaskElement(task));
+        });
+      }
+      taskList.appendChild(completedSection);
+    }
+  }
+
+  function toggleCompleted() {
+    showCompleted = !showCompleted;
+    renderTasks();
+  }
+
+  function createTaskElement(task) {
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.innerHTML = `
+      <div class="task-text ${task.completed ? 'completed' : ''}">
+        <span>⭐</span>
+        <span contenteditable="true" onblur="updateTaskText(${task.id}, this.innerText)">${task.text}</span>
+      </div>
+      <div class="task-actions">
+        <input type="checkbox" class="form-check-input me-2" onchange="triggerCompletion(${task.id}, this)" ${task.completed ? 'checked' : ''}/>
+        <button onclick="triggerRemove(${task.id}, this)">✖</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function updateTaskText(id, text) {
+    const task = tasks.find(t => t.id === id);
+    if (task) task.text = text;
+  }
+
+  function triggerCompletion(id, checkbox) {
+    const taskDiv = checkbox.closest('.task-item');
+    taskDiv.classList.add('crumble');
+    setTimeout(() => {
+      toggleTaskCompletion(id);
+    }, 600);
+  }
+
+  function toggleTaskCompletion(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      task.completed = !task.completed;
+      renderTasks();
+    }
+  }
+
+  function triggerRemove(id, btn) {
+    const taskDiv = btn.closest('.task-item');
+    taskDiv.classList.add('crumble');
+    setTimeout(() => {
+      removeTask(id);
+    }, 600);
+  }
+
+  function removeTask(id) {
+    const index = tasks.findIndex(t => t.id === id);
+    if (index !== -1) {
+      lastDeletedTask = tasks[index];
+      tasks.splice(index, 1);
+      renderTasks();
+    }
+  }
+
+  function undoDelete() {
+    if (lastDeletedTask) {
+      tasks.push(lastDeletedTask);
+      renderTasks();
+      lastDeletedTask = null;
+    } else {
+      alert("No recent task to undo.");
+    }
+  }
+
+  function sortTasks(criteria) {
+    if (criteria === 'alpha') {
+      tasks.sort((a, b) => a.text.localeCompare(b.text));
+    } else if (criteria === 'date') {
+      tasks.sort((a, b) => a.date - b.date);
+    }
+    renderTasks();
+  }
+</script>
+</body>
+</html>

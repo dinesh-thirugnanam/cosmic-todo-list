@@ -1,8 +1,13 @@
-import React, { useRef, useEffect } from 'react';
-import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
+import React, { useRef, useEffect } from "react";
+import { useThree } from "@react-three/fiber";
+import * as THREE from "three";
 
-const NodeHitbox = ({ setHovered, taskCount, position = [0, 0, 5], threshold = 50 }) => {
+const NodeHitbox = ({
+  setHovered,
+  taskCount,
+  position = [0, 0, 5],
+  threshold = 50,
+}) => {
   const hitboxRef = useRef(null);
   const { camera, gl, size } = useThree();
   const mousePos = useRef({ x: 0, y: 0 });
@@ -21,8 +26,8 @@ const NodeHitbox = ({ setHovered, taskCount, position = [0, 0, 5], threshold = 5
       };
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [gl, size]);
 
   // Check proximity on each frame
@@ -43,8 +48,8 @@ const NodeHitbox = ({ setHovered, taskCount, position = [0, 0, 5], threshold = 5
       const pixelY = ((screenPos.y + 1) * rect.height) / 2;
 
       // Get mouse pixel coordinates
-      const mouseX = (mousePos.current.x + 1) * rect.width / 2;
-      const mouseY = (mousePos.current.y + 1) * rect.height / 2;
+      const mouseX = ((mousePos.current.x + 1) * rect.width) / 2;
+      const mouseY = ((mousePos.current.y + 1) * rect.height) / 2;
 
       // Adjust threshold based on camera distance
       const distance = camera.position.distanceTo(worldPos);
@@ -69,9 +74,14 @@ const NodeHitbox = ({ setHovered, taskCount, position = [0, 0, 5], threshold = 5
   }, [camera, gl, size, setHovered, threshold]);
 
   return (
-    <mesh ref={hitboxRef} position={position}>
+    <mesh
+      ref={hitboxRef}
+      position={position}
+      onClick={() => console.log("Hitbox clicked!")}
+    >
       <circleGeometry args={[0.3 + Math.min(taskCount * 0.2, 0.5), 1, 1]} />
-      <meshBasicMaterial transparent opacity={0} />
+      {/* <meshBasicMaterial transparent opacity={0} /> */}
+      <meshBasicMaterial visible={false} />
     </mesh>
   );
 };
